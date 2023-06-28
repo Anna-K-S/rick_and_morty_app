@@ -33,7 +33,7 @@ class Api {
     //возвращаем результат метода 'getCharacter'
   }
 
-  Future<Character> getDetailsCharacters(int? id) async {
+  Future<Character> getDetailsCharacters(int id) async {
     //создаем асинхронный метод, который возвращаем 'Character' и принимает 'id'
     final response = await _dio.get('/character/$id');
     //создаем GET запрос к endpoint '/character/$id', чтобы получить инфо о персонаже с указанным id

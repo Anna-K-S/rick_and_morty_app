@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rick_and_morty_app/service/api.dart';
 import 'package:rick_and_morty_app/data/characters_response.dart';
 import 'package:rick_and_morty_app/service/item_status.dart';
 import 'package:rick_and_morty_app/theme/text_styles.dart';
+import '../main.dart';
 import 'character_detail_screen.dart';
 
 class CharacterListScreen extends StatefulWidget {
@@ -12,80 +12,76 @@ class CharacterListScreen extends StatefulWidget {
   _CharacterListScreenState createState() => _CharacterListScreenState();
 }
 
+//приватный класс
 class _CharacterListScreenState extends State<CharacterListScreen> {
-  //приватный класс
-  final Api _api = Api();
-  //экземпляр класса Api
+//экземпляр класса ItemStatus
   final _icon = ItemStatus();
-  //экземпляр класса ItemStatus
 
   @override
   Widget build(BuildContext context) {
+    //создание базовой структуры экрана
     return Scaffold(
-      //создание базовой структуры экрана
+      //заголовок вверху экрана с текстом
       appBar: AppBar(
         title: const Text('Characters'),
-        //заголовок вверху экрана с текстом
       ),
 
       body: SafeArea(
-        child: FutureBuilder(
-            future: _api.getCharacters(),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
+        child: FutureBuilder<CharactersResponse>(
+            //отображает данные полученные из будущего функции "_api.getCharacters()"
+            future: api.getCharacters(),
+            builder: (context, snapshot) {
+              //ConnectionState позволяет определить состояние асинхронной операции
+              //ConnectionState.waiting - операция выполняется в данный момент
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-                //отображает данные полученные из будущего функции "_api.getCharacters()"
                 //и показывает индикатор загрузки "CircularProgressIndicator();"
-                //ConnectionState позволяет определить состояние асинхронной операции
-                //ConnectionState.waiting - операция выполняется в данный момент
+                return const CircularProgressIndicator();
               }
-              if (snapshot.hasError) {
+              if (snapshot.hasError || snapshot.data == null) {
                 Center(
                   child: Text('Error: ${snapshot.error}'),
                 );
               }
-              final CharactersResponse _data = snapshot.data;
-
+              final _data = snapshot.data;
+              //отображает список персонажей с использованием данных из snapshot.data
               return ListView.builder(
-                  //отображает список персонажей с использованием данных из snapshot.data
-                  itemCount: _data.results
-                      .length, //количество элементов в получаемом списке
+                  //количество элементов в получаемом списке
+                  itemCount: _data!.results.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final _item = _data.results[index];
                     //получаем элементов по индексу
+                    final item = _data.results[index];
 
+                    //отображает каждый элемент списка персонажей
                     return ListTile(
-                      //отображает каждый элемент списка персонажей
                       title: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Image.network(
-                            _item.image,
+                          Ink.image(
                             height: 150.0,
                             width: 150.0,
                             alignment: Alignment.centerLeft,
+                            image: NetworkImage(item.image),
                           ),
-                          const SizedBox(
-                              width:
-                                  5), //небольшой отступ между изображением и текстом
+                          //небольшой отступ между изображением и текстом
+                          const SizedBox(width: 5),
                           Expanded(
+                            //вертикальное отображение элементов
                             child: Column(
-                              //вертикальное отображение элементов
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text(_item.name,
+                                Text(item.name,
                                     style: AppTextStyles.characterName),
                                 Text(
-                                  '${_icon.itemIcon(_item.status)} ${_item.status} - ${_item.species}',
+                                  '${_icon.getItemIcon(_icon.getItemStatus(item.status))} ${item.status} - ${item.species}',
                                   style: AppTextStyles.status,
                                 ),
                                 const Text('Last know location: ',
                                     style: AppTextStyles.text),
                                 Text(
-                                  _item.location[0].name,
-                                  maxLines: 1,
+                                  item.location.first.name,
                                   //ограничение количества строк для расположения и места первого появления,
                                   // чтобы они не занимали много места
+                                  maxLines: 1,
                                   style: AppTextStyles.lastLocation,
                                 ),
                                 const Text(
@@ -93,7 +89,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
                                   style: AppTextStyles.text,
                                 ),
                                 Text(
-                                  _item.origin[0].name,
+                                  item.origin.first.name,
                                   maxLines: 1,
                                   style: AppTextStyles.firstLocation,
                                 ),
@@ -102,12 +98,12 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
                           ),
                         ],
                       ),
+                      //переход на след экран с детальной информацией о персонаже
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => CharacterDetailScreen(
                               characterId: _data.results[index].id),
-                          //переход на след экран с детальной информацией о персонаже
                         ),
                       ),
                     );

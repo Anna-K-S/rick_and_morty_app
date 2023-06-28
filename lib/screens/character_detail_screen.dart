@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:rick_and_morty_app/main.dart';
 import 'package:rick_and_morty_app/service/api.dart';
 import 'package:rick_and_morty_app/service/item_status.dart';
 import 'package:rick_and_morty_app/theme/text_styles.dart';
 
-
-class CharacterDetailScreen extends StatefulWidget { 
-  //класс с подробной информацией о персонаже 
+class CharacterDetailScreen extends StatefulWidget {
+  //класс с подробной информацией о персонаже
   final int characterId;
 //в качестве обязательного параметра принимает id персонажа
   const CharacterDetailScreen({required this.characterId, super.key});
@@ -16,7 +16,6 @@ class CharacterDetailScreen extends StatefulWidget {
 }
 
 class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
-  final Api _api = Api();
   //экземпляр класса Api для запросов
   final _icon = ItemStatus();
   //экземпляр класса ItemStatus для получения соответствующей иконки статуса персонажа
@@ -28,7 +27,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
         title: const Text('Character Detail'),
       ),
       body: FutureBuilder(
-        future: _api.getDetailsCharacters(widget.characterId),
+        future: api.getDetailsCharacters(widget.characterId),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -43,8 +42,8 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
           }
           if (snapshot.hasData)
           // проверка поступили ли данные
-           {
-            final _character = snapshot.data!;
+          {
+            final character = snapshot.data!;
             //полученные данные о персонажах
 
             return ListTile(
@@ -53,7 +52,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
                 children: <Widget>[
                   Image.network(
                     //отображение изображение прешедшего в виде ссылки из _character.image
-                    _character.image,
+                    character.image,
                     fit: BoxFit.cover,
                   ),
                   const SizedBox(height: 10),
@@ -61,58 +60,49 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
+                        Text(character.name,
+                            style: AppTextStyles.characterName),
                         Text(
-                          _character.name,
-                          style: AppTextStyles.characterName
-                        ),
-                        Text(
-                          '${_character.status} - ${_character.species} ${_icon.itemIcon(_character.status)}',
+                          '${_icon.getItemStatus(character.status)} - ${character.species} ${_icon.getItemIcon(_icon.getItemStatus(character.status))}',
                           style: AppTextStyles.status,
                         ),
                         const SizedBox(
                           height: 10,
                         ),
-                        const Text(
-                          'Last know location:',
-                          style: AppTextStyles.text
-                        ),
+                        const Text('Last know location:',
+                            style: AppTextStyles.text),
                         const SizedBox(height: 6),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              
                               Text(
-                                _character.location[0].name,
+                                character.location.first.name,
                                 style: AppTextStyles.lastLocation,
                               ),
                               const SizedBox(
                                 height: 10,
                               ),
-                              const Text(
-                                'First seen in:',
-                                style: AppTextStyles.text
-                              ),
+                              const Text('First seen in:',
+                                  style: AppTextStyles.text),
                               const SizedBox(
                                 height: 10,
                               ),
                               Text(
-                                _character.origin[0].name,
+                                character.origin.first.name,
                                 style: AppTextStyles.firstLocation,
                               ),
                               const SizedBox(
                                 height: 10,
                               ),
-                              const Text(
-                                'Episodes:',
-                                style: AppTextStyles.text
-                              ),
+                              const Text('Episodes:',
+                                  style: AppTextStyles.text),
                               const SizedBox(
                                 height: 10,
                               ),
                               Text(
-                                _character.episode[0],
-                                style:AppTextStyles.episodes,
+                                character.episode.first,
+                                style: AppTextStyles.episodes,
                               ),
                             ],
                           ),
